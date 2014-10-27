@@ -1,0 +1,65 @@
+﻿@model MvcApplication2.Models.Task
+<div class="modal-content">
+    <div class="modal-header">
+        <button class="close" data-dismiss="modal" area-hidden="true">X</button>
+        <h1>Добавление задачи</h1>
+    </div>
+    <div class="modal-body">
+        <div>
+            @using (Ajax.BeginForm("UpdateTask", new AjaxOptions { UpdateTargetId = "childdiv" + Model.Task_Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#modDialog').modal('hide');" }))
+            {
+                Html.EnableClientValidation(true);
+                Html.EnableUnobtrusiveJavaScript(true);
+                <div class="editor-field">
+                    <label for="Name">Название задачи:</label>
+                    <input data-val="true" value="@Model.Name" data-val-required="Введите название задачи." id="Name" type="text" name="Name" maxlength="50" />
+                    <span class="field-validation-valid" data-valmsg-for="Name" data-valmsg-replace="true"></span>
+                </div>
+                <div class="editor-field">
+                    <label for="Deadline">Срок выполнения до:</label>
+                    <input type="text" value="@Model.Deadline" data-val="true" data-val-required="Укажите дату." class="form-control" id="dpd2" data-date="12-02-2012" data-date-format="dd.mm.yyyy" name="Deadline" />
+                    <span class="field-validation-valid" data-valmsg-for="Deadline" data-valmsg-replace="true"></span>
+                </div>
+                <div>
+                    <input type="hidden" name="Task_Id" value="@Model.Task_Id" />
+                </div>
+                <div>
+                    <input type="hidden" name="Id" value="@Model.Id" />
+                </div>
+                <div>
+                    <label for="Priority">Приоритет:</label>
+                    <select class="form-control" name="Priority">
+                        <option value="High">Высокий</option>
+                        <option value="Middle">Средний</option>
+                        <option value="Low">Низкий</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="State">Состояние:</label>
+                    <select class="form-control" name="State">
+                        <option value="Active">Активна</option>
+                        <option value="Resolved">Решена</option>
+                        <option value="Closed">Закрыта</option>
+                    </select>
+                </div>
+
+
+                <div class="modal-footer">
+                    <input type="submit" value="ОК" class="btn btn-primary" />
+                </div>
+
+
+            }
+        </div>
+    </div>
+</div>
+<script>
+
+    $('#dpd2').datepicker({
+        startDate: "today"
+    });
+
+</script>
+
+@Scripts.Render("~/bundles/jqueryval")

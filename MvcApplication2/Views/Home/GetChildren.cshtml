@@ -1,0 +1,50 @@
+﻿@model IEnumerable<MvcApplication2.Models.Task>
+           
+<div id="searchresults">
+    @if (Model != null && Model.Count() > 0)
+    {
+        
+            foreach (var item in Model)
+            {
+                <div class="list-group-item">
+                    
+                    @Html.DisplayFor(modelItem => item.Name)
+                    <label>Приоритет</label>
+                    @Html.DisplayFor(modelItem => item.Priority)
+                    <label>Состояние</label>
+                    @Html.DisplayFor(modelItem => item.State)
+                    <label>Крайний срок</label>
+                    @Html.DisplayFor(modelItem => item.Deadline)
+                    <div>
+                        @Ajax.ActionLink("Показать подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace })
+
+                        @Html.ActionLink("Добавить подзадачу", "NewTaskWindow", new { pid = item.Id }, new { @class = "taskItem" })
+                        
+                        @Html.ActionLink("Редактировать...", "EditTaskWindow", new { id = item.Id }, new { @class = "taskItem" })
+
+                        @Ajax.ActionLink("Удалить", "DeleteTask", new { id = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Task_Id, InsertionMode = InsertionMode.Replace })
+                    </div>
+                </div>
+                <ul>                    
+                    <div id="@("childdiv"+item.Id)"></div>
+                </ul>
+            }
+
+
+    }
+</div>
+
+
+    <script type="text/javascript">
+
+        $(function () {
+            $.ajaxSetup({ cache: false });
+            $(".taskItem").click(function (e) {
+                e.preventDefault();
+                $.get(this.href, function (data) {
+                    $('#dialogContent').html(data);
+                    $('#modDialog').modal('show');
+                });
+            });
+        })
+    </script>
