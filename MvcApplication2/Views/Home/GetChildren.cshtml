@@ -1,30 +1,88 @@
-﻿@model IEnumerable<MvcApplication2.Models.Task>
+﻿@using MvcApplication2.Models
+@model IEnumerable<MvcApplication2.Models.Task>
            
-<div id="searchresults">
+
     @if (Model != null && Model.Count() > 0)
     {
-        
-            foreach (var item in Model)
-            {
-                <div class="list-group-item">
+
+        foreach (var item in Model)
+        {
+            <div class="list-group-item" id="@("task"+item.Id)">
+                <div>
+                    <span>
+                        @switch (item.State)
+                        {
+                            case (StateEnum.New):
+                                {
+                                    <span class="label label-default" id="sp1">Новая задача</span>
+                                }
+                                break;
+                            case (StateEnum.Active):
+                                {
+                                    <span class="label label-primary" id="sp1">Активная задача</span>
+                                }
+                                break;
+                            case (StateEnum.Resolved):
+                                {
+                                    <span class="label label-primary" id="sp1">Задача решена</span>
+                                }
+                                break;
+                            case (StateEnum.Closed):
+                                {
+                                    <span class="label label-primary" id="sp1">Задача закрыта</span>
+                                }
+                                break;
+                        }
+
+                        @switch (item.Priority)
+                        {
+                            case (PriorityEnum.High):
+                            {
+                                <span class="label label-primary" style="background-color: red">Высокий приоритет</span>
+                            }
+                            break;
+                            case (PriorityEnum.Middle):
+                            {
+                                <span class="label label-primary" style="background-color: chartreuse">Средний приоритет</span>
+                            }
+                            break;
+                            case (PriorityEnum.Low):
+                            {
+                                <span class="label label-primary" style="background-color: blue">Низкий приоритет</span>
+                            }
+                            break;
+                        }
+                        <span class="label label-primary pull-right">@("до "+item.Deadline)</span>
+
+                    </span>
                     
-                    @Html.DisplayFor(modelItem => item.Name)
-                    <label>Приоритет</label>
-                    @Html.DisplayFor(modelItem => item.Priority)
-                    <label>Состояние</label>
-                    @Html.DisplayFor(modelItem => item.State)
-                    <label>Крайний срок</label>
-                    @Html.DisplayFor(modelItem => item.Deadline)
-                    <div>
-                        @Ajax.ActionLink("Показать подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace })
-
-                        @Html.ActionLink("Добавить подзадачу", "NewTaskWindow", new { pid = item.Id }, new { @class = "taskItem" })
-                        
-                        @Html.ActionLink("Редактировать...", "EditTaskWindow", new { id = item.Id }, new { @class = "taskItem" })
-
-                        @Ajax.ActionLink("Удалить", "DeleteTask", new { id = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Task_Id, InsertionMode = InsertionMode.Replace })
-                    </div>
                 </div>
+                <label>
+                    @if (item.State == StateEnum.Active)
+                    {
+                        <input type="checkbox" id=@("chkbx"+item.Id) onclick="toresolved(@item.Id)">
+                    }
+                    @item.Name
+                </label>
+                
+                <div id="lnks">
+                    @if (item.State == StateEnum.New)
+                    {
+                        @Ajax.ActionLink("Сделать активной", "SetActive", new { id = item.Id }, new AjaxOptions { UpdateTargetId = "task" + item.Id, InsertionMode = InsertionMode.Replace }, new { @class = "btn btn-default" })
+                    }
+
+                    @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#chldshlnk" + item.Id + "').hide(); $('#chldsha" + item.Id + "').show();" }, new { @id = "chldshlnk" + item.Id })
+
+                    <a href="#" id=@("chldsha"+item.Id) style="display: none" onclick=@("$('#childdiv" + item.Id + "').toggle();")>Показать/скрыть подзадачи</a>
+
+                    @Html.ActionLink("Добавить подзадачу", "NewTaskWindow", new { pid = item.Id }, new { @class = "taskItem", @id = "addl" })
+
+                    @Html.ActionLink("Редактировать...", "EditTaskWindow", new { id = item.Id }, new { @class = "taskItem", @id = "edl" })
+
+                    @Ajax.ActionLink("Удалить", "DeleteTask", new { id = item.Id }, new AjaxOptions { OnSuccess = "$('#task" + item.Id + "').remove(); $('#childdiv" + item.Id + "').remove();" })
+
+                </div>
+            </div>
                 <ul>                    
                     <div id="@("childdiv"+item.Id)"></div>
                 </ul>
@@ -32,19 +90,6 @@
 
 
     }
-</div>
 
 
-    <script type="text/javascript">
 
-        $(function () {
-            $.ajaxSetup({ cache: false });
-            $(".taskItem").click(function (e) {
-                e.preventDefault();
-                $.get(this.href, function (data) {
-                    $('#dialogContent').html(data);
-                    $('#modDialog').modal('show');
-                });
-            });
-        })
-    </script>

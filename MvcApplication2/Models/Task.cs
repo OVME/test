@@ -22,6 +22,7 @@ namespace MvcApplication2.Models
 
     public enum StateEnum
     {
+        New,
         Active,
         Resolved,
         Closed

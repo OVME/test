@@ -1,0 +1,76 @@
+﻿@using MvcApplication2.Models
+@model MvcApplication2.Models.Task
+
+<div>
+    <span>
+        @switch (Model.State)
+        {
+            case (StateEnum.New):
+                {
+                    <span class="label label-default" id="sp1">Новая задача</span>
+                }
+                break;
+            case (StateEnum.Active):
+                {
+                    <span class="label label-primary" id="sp1">Активная задача</span>
+                }
+                break;
+            case (StateEnum.Resolved):
+                {
+                    <span class="label label-default" id="sp1">Задача решена</span>
+                }
+                break;
+            case (StateEnum.Closed):
+                {
+                    <span class="label label-primary" id="sp1">Задача закрыта</span>
+                }
+                break;
+        }
+
+        @switch (Model.Priority)
+        {
+            case (PriorityEnum.High):
+                {
+                    <span class="label label-primary" style="background-color: red">Высокий приоритет</span>
+                }
+                break;
+            case (PriorityEnum.Middle):
+                {
+                <span class="label label-primary" style="background-color: chartreuse">Средний приоритет</span>
+            }
+            break;
+            case (PriorityEnum.Low):
+            {
+                <span class="label label-primary" style="background-color: blue">Низкий приоритет</span>
+            }
+            break;
+        }
+        <span class="label label-primary pull-right">@("до " + Model.Deadline)</span>
+    </span>
+
+</div>
+<label>
+    @if (Model.State == StateEnum.Active)
+    {
+        <input type="checkbox" id=@("chkbx"+Model.Id) onclick="toresolved(@Model.Id)">
+    }
+    @Model.Name
+</label>
+<div id="lnks">
+
+    @if (Model.State == StateEnum.New)
+    {
+        @Ajax.ActionLink("Сделать активной", "SetActive", new { id = Model.Id }, new AjaxOptions { UpdateTargetId = "task" + Model.Id, InsertionMode = InsertionMode.Replace }, new { @class = "btn btn-default" })
+    }
+
+    @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = Model.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + Model.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#chldshlnk" + Model.Id + "').hide(); $('#chldsha" + Model.Id + "').show();" }, new { @id = "chldshlnk" + Model.Id })
+
+    <a href="#" id=@("chldsha" + Model.Id) style="display: none" onclick=@("$('#childdiv" + Model.Id + "').toggle();")>Показать/скрыть подзадачи</a>
+
+    @Html.ActionLink("Добавить подзадачу", "NewTaskWindow", new { pid = Model.Id }, new { @class = "taskItem", @id = "addl" })
+
+    @Html.ActionLink("Редактировать...", "EditTaskWindow", new { id = Model.Id }, new { @class = "taskItem", @id = "edl" })
+
+    @Ajax.ActionLink("Удалить", "DeleteTask", new { id = Model.Id }, new AjaxOptions { OnSuccess = "$('#task" + Model.Id + "').remove(); $('#childdiv" + Model.Id + "').remove();" })
+
+</div>

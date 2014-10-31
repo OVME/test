@@ -6,7 +6,7 @@
     </div>
     <div class="modal-body">
         <div>
-            @using (Ajax.BeginForm("AddNewTask", new AjaxOptions { UpdateTargetId = "childdiv" + ViewBag.Pid, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#modDialog').modal('hide');" }))
+            @using (Ajax.BeginForm("AddNewTask", new AjaxOptions { UpdateTargetId = "childdiv" + ViewBag.Pid, InsertionMode = InsertionMode.InsertAfter, OnSuccess = "$('#modDialog').modal('hide'); " + "$('#childdiv" + ViewBag.Pid + "').show(); afterloadsetting();" }))
             {
                 Html.EnableClientValidation(true);
                 Html.EnableUnobtrusiveJavaScript(true);
@@ -33,12 +33,7 @@
                 </div>
 
                 <div>
-                    <label for="State">Состояние:</label>
-                    <select class="form-control" name="State">
-                        <option value="Active">Активна</option>
-                        <option value="Resolved">Решена</option>
-                        <option value="Closed">Закрыта</option>
-                    </select>
+                    <input type ="hidden" value="New" name ="State" />
                 </div>
 
 

@@ -64,7 +64,8 @@ namespace MvcApplication2.Controllers
             if (task.Task_Id == 0)
                 task.Task_Id = null;
             _sevice.Insert(task);
-            List<Task> list = task.Task_Id == null ? new List<Task>(_sevice.GetRoot()) : new List<Task>(_sevice.GetWhere(new { Task_Id = task.Task_Id }));
+            List<Task> list = new List<Task>();
+            list.Add(task);
             return PartialView("GetChildren", list);
         }
 
@@ -75,22 +76,57 @@ namespace MvcApplication2.Controllers
             {
                 _sevice.DeleteChildren(id);
                 _sevice.Delete(new { Id = id });
-                return PartialView("GetChildren", _sevice.GetRoot());
+                //return PartialView("GetChildren", _sevice.GetRoot());
+                return new HttpStatusCodeResult(200);
             }
             else
             {
                 int pid = (int)(_sevice.GetWhere(new { Id = id }).First().Task_Id);
                 _sevice.DeleteChildren(id);
                 _sevice.Delete(new { Id = id });
-                return PartialView("GetChildren", _sevice.GetWhere(new { Task_Id = pid }));
+                //return PartialView("GetChildren", _sevice.GetWhere(new { Task_Id = pid }));
+                return new HttpStatusCodeResult(200);
             }
         }
 
         public ActionResult UpdateTask(Task task)
         {
             _sevice.Update(task);
-            List<Task> list = task.Task_Id == null ? new List<Task>(_sevice.GetRoot()) : new List<Task>(_sevice.GetWhere(new { Task_Id = task.Task_Id }));
-            return PartialView("GetChildren", list);
+            //List<Task> list = task.Task_Id == null ? new List<Task>(_sevice.GetRoot()) : new List<Task>(_sevice.GetWhere(new { Task_Id = task.Task_Id }));
+            return PartialView("TaskPart", task);
         }
+
+        public ActionResult SetActive(int id)
+        {
+            Task task = _sevice.GetFirst(new {Id = id});
+            task.State = StateEnum.Active;
+            _sevice.Update(task);
+            return PartialView("TaskPart",task);
+        }
+
+        public ActionResult SetResolved(int id)
+        {
+            Task task = _sevice.GetFirst(new { Id = id });
+            task.State = StateEnum.Resolved;
+            _sevice.Update(task);
+            return new HttpStatusCodeResult(200);
+        }
+
+        public ActionResult FromResolvedToActive(int id)
+        {
+            Task task = _sevice.GetFirst(new { Id = id });
+            task.State = StateEnum.Active;
+            _sevice.Update(task);
+            return new HttpStatusCodeResult(200);
+        }
+
+        public ActionResult FromResolvedToClosed(int id)
+        {
+            Task task = _sevice.GetFirst(new { Id = id });
+            task.State = StateEnum.Closed;
+            _sevice.Update(task);
+            return new HttpStatusCodeResult(200);
+        }
+
     }
 }

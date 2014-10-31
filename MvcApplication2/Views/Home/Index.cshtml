@@ -1,11 +1,16 @@
-﻿@model IEnumerable<MvcApplication2.Models.Task>
+﻿@using System.Reflection.Emit
+@using MvcApplication2.Models
+@model IEnumerable<MvcApplication2.Models.Task>
 
 @{
     ViewBag.Title = "Index";
 }
-
-   @Html.ActionLink("Добавить задачу", "NewTaskWindow", new { pid = 0 }, new { @class = "taskItem" })
-
+<div class="page-header">
+    <h1>Ваши задачи</h1>
+</div>
+<div style="padding-bottom:10px">
+    @Html.ActionLink("Добавить задачу", "NewTaskWindow", new { pid = 0 }, new { @class = "taskItem btn btn-primary" })
+</div>
     
 <div id="modDialog" class="modal fade">
     <div id="dialogContent" class="modal-dialog"></div>
@@ -13,27 +18,75 @@
     
 
 <div class="list-group" id="childdiv">
-    @foreach (var item in Model)
+    @foreach (var item in Model.Where(p=>p.State==StateEnum.Active||p.State==StateEnum.New))
     {
 
 
-        <div class="list-group-item">
-            
-            @Html.DisplayFor(modelItem => item.Name)
-            <label>Приоритет</label>
-            @Html.DisplayFor(modelItem => item.Priority)
-            <label>Состояние</label>
-            @Html.DisplayFor(modelItem => item.State)
-            <label>Крайний срок</label>
-            @Html.DisplayFor(modelItem => item.Deadline)
+        <div class="list-group-item" id ="@("task"+item.Id)">
             <div>
-                @Ajax.ActionLink("Показать подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace })
+                <span>
+                    @switch (item.State)
+                    {
+                        case (StateEnum.New):
+                            {
+                                <span id="sp1" class="label label-default">Новая задача</span>
+                            }
+                            break;
+                        case (StateEnum.Active):
+                            {
+                                <span id="sp1" class="label label-primary">Активная задача</span>
+                            }
+                            break;
+                    }
 
-                @Html.ActionLink("Добавить подзадачу", "NewTaskWindow", new { pid = item.Id }, new { @class = "taskItem" })
+                    @switch (item.Priority)
+                    {
+                        case (PriorityEnum.High):
+                            {
+                                <span class="label label-primary" style="background-color: red">Высокий приоритет</span>
+                            }
+                            break;
+                        case (PriorityEnum.Middle):
+                            {
+                                <span class="label label-primary" style="background-color: chartreuse">Средний приоритет</span>
+                            }
+                            break;
+                        case (PriorityEnum.Low):
+                            {
+                                <span class="label label-primary" >Низкий приоритет</span>
+                            }
+                            break;
+                    }
+                    
+                    <span class="label label-primary pull-right">@("до " + item.Deadline)</span>
+                </span>
+
+            </div>
+            <label>
+                 @if(item.State==StateEnum.Active)
+                 { 
+                <input type="checkbox" id=@("chkbx"+item.Id) onclick="toresolved(@item.Id)">
+                 }
+                <span>@item.Name</span>
+            </label>  
+
+            <div id ="lnks">
                 
-                @Html.ActionLink("Редактировать...", "EditTaskWindow", new { id = item.Id }, new { @class = "taskItem" })
+                @if (item.State == StateEnum.New)
+                {
+                    @Ajax.ActionLink("Сделать активной", "SetActive", new { id = item.Id }, new AjaxOptions { UpdateTargetId = "task" + item.Id, InsertionMode = InsertionMode.Replace }, new { @class = "btn btn-default" })
+                }
 
-                @Ajax.ActionLink("Удалить", "DeleteTask", new { id = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Task_Id, InsertionMode = InsertionMode.Replace })
+                @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#chldshlnk" + item.Id + "').hide(); $('#chldsha"+item.Id+"').show();" }, new { @id = "chldshlnk" + item.Id })
+                
+                <a href="#" id=@("chldsha"+item.Id) style="display: none" onclick=@("$('#childdiv" + item.Id + "').toggle();")>Показать/скрыть подзадачи</a>
+
+                @Html.ActionLink("Добавить подзадачу", "NewTaskWindow", new { pid = item.Id }, new { @class = "taskItem", @id = "addl" })
+                
+                @Html.ActionLink("Редактировать...", "EditTaskWindow", new { id = item.Id }, new { @class = "taskItem", @id = "edl" })
+
+                @Ajax.ActionLink("Удалить", "DeleteTask", new { id = item.Id }, new AjaxOptions { OnSuccess = "$('#task" + item.Id + "').remove(); $('#childdiv" + item.Id + "').remove();" })
+              
             </div>
         </div>
         <ul>
@@ -42,8 +95,104 @@
 
     }
 </div>
+<div class="page-header">
+    <h1>Решенные задачи <small>Можете их закрыть или вернуться к их решению</small></h1>
+</div>
+<div id="resolveddiv">
+    @foreach (var item in Model.Where(p => p.State == StateEnum.Resolved))
+    {
 
 
+        <div class="list-group-item" id="@("task"+item.Id)">
+            <div>
+                <span>
+                    <span id="sp1" class="label label-default">Решенная задача</span>
+
+                    @switch (item.Priority)
+                    {
+                        case (PriorityEnum.High):
+                        {
+                            <span class="label label-primary" style="background-color: red">Высокий приоритет</span>
+                        }
+                            break;
+                        case (PriorityEnum.Middle):
+                        {
+                            <span class="label label-primary" style="background-color: chartreuse">Средний приоритет</span>
+                        }
+                            break;
+                        case (PriorityEnum.Low):
+                        {
+                            <span class="label label-primary">Низкий приоритет</span>
+                        }
+                            break;
+                    }
+
+                    <span class="label label-primary pull-right">@("до " + item.Deadline)</span>
+                </span>
+
+            </div>
+            <label>
+
+                <input type="checkbox" id=@("chkbx"+item.Id) onclick="toactive(@item.Id)" checked="checked">
+
+                <span>@item.Name</span>
+            </label>
+
+            <div id="lnks">
+
+                @if (item.State == StateEnum.New)
+                {
+                    @Ajax.ActionLink("Сделать активной", "SetActive", new { id = item.Id }, new AjaxOptions { UpdateTargetId = "task" + item.Id, InsertionMode = InsertionMode.Replace }, new { @class = "btn btn-default" })
+                }
+
+                @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#chldshlnk" + item.Id + "').hide(); $('#chldsha" + item.Id + "').show();" }, new { @id = "chldshlnk" + item.Id, @style = "display: none" })
+
+                <a href="#" id=@("chldsha"+item.Id) style="display: none" onclick=@("$('#childdiv" + item.Id + "').toggle();")>Показать/скрыть подзадачи</a>
+
+                @Html.ActionLink("Добавить подзадачу", "NewTaskWindow", new { pid = item.Id }, new { @class = "taskItem", @id = "addl", @style = "display: none" })
+
+                @Html.ActionLink("Редактировать...", "EditTaskWindow", new { id = item.Id }, new { @class = "taskItem", @id = "edl", @style = "display: none" })
+
+                @Ajax.ActionLink("Удалить", "DeleteTask", new { id = item.Id }, new AjaxOptions { OnSuccess = "$('#task" + item.Id + "').remove(); $('#childdiv" + item.Id + "').remove();" })
+                
+                <input id="clsbtn" value="Закрыть задачу" class="btn btn-danger pull-right" onclick="toclosed(@item.Id)">
+            </div>
+        </div>
+        <ul>
+            <div class="list-group" id="@("childdiv"+item.Id)"></div>
+        </ul>
+    }
+</div>
+
+<div class="page-header">
+    <h1>Закрытые задачи <small>Вы к ним больше никогда не вернетесь</small></h1>
+</div>
+
+<div id="closeddiv">
+    @foreach (var item in Model.Where(p => p.State == StateEnum.Closed))
+    {
+
+
+        <div class="list-group-item" id="@("task"+item.Id)">
+            <div>
+                <span>
+                    <span id="sp1" class="label label-default">Закрытая задача</span>
+                </span>
+
+            </div>
+            <label>
+
+                <span>@item.Name</span>
+            </label>
+
+            <div id="lnks">
+
+                @Ajax.ActionLink("Удалить", "DeleteTask", new { id = item.Id }, new AjaxOptions { OnSuccess = "$('#task" + item.Id + "').remove(); $('#childdiv" + item.Id + "').remove();" })
+
+            </div>
+        </div>
+    }
+</div>
 
 
 @section scripts
@@ -62,6 +211,99 @@
             });
         })
     </script>
+
+    <script>
+        function afterloadsetting() {
+            $('body').on('click', '.taskItem', function(e) {
+                e.preventDefault();
+                $.get(this.href, function(data) {
+                    $('#dialogContent').html(data);
+                    $('#modDialog').modal('show');
+                });
+            });
+        }
+
+
+        function toresolved(i) {
+            $.get("/Home/SetResolved", { id: i }, resolvedSuccess(i));
+            
+        }
+
+        function resolvedSuccess(i) {
+            var cdiv;
+            cdiv= $('#childdiv>#task' + i);
+            if (cdiv.length != 0) {
+                $("#resolveddiv").append(cdiv);
+                cdiv.find("#lnks").append('<input id="clsbtn" value="Закрыть задачу" class="btn btn-danger pull-right" onclick="toclosed('+i+')">');
+            } else {
+                cdiv = $('#task' + i);
+            }
+            var sp = cdiv.find("#sp1");
+            sp.text("Решенная задача");
+            sp.attr("class","label label-default");
+            cdiv.find("#addl").attr("style","display: none");
+            cdiv.find("#edl").attr("style","display: none");
+            cdiv.find("#addl").attr("style","display: none");
+            cdiv.find("#chldsha"+i).attr("style","display: none");
+            cdiv.find("#chldshlnk"+i).attr("style","display: none");
+            cdiv.find("#chkbx" + i).attr("onclick", "toactive(" + i + ");");
+        }
+
+        function toactive(i) {
+            $.get("/Home/FromResolvedToActive", { id: i }, activeSuccess(i));
+            
+
+        }
+        function activeSuccess(i) {
+            var cdiv;
+            cdiv= $('#resolveddiv>#task' + i);
+            if (cdiv.length != 0) {
+                $("#childdiv").append(cdiv);
+                cdiv.find("#clsbtn").remove();
+            } else {
+                cdiv = $('#task' + i);
+            }
+            var sp = cdiv.find("#sp1");
+            sp.text("Активная задача");
+            sp.attr("class","label label-primary");
+            cdiv.find("#addl").attr("style","");
+            cdiv.find("#edl").attr("style","");
+            cdiv.find("#addl").attr("style","");
+            cdiv.find("#chldshlnk"+i).attr("style","");
+            cdiv.find("#chkbx" + i).attr("onclick", "toresolved(" + i + ");");
+
+        }
+
+
+        function toclosed(i) {
+            $.get("/Home/FromResolvedToClosed", { id: i }, closedSuccess(i));
+        }
+
+        function closedSuccess(i) {
+            var cdiv;
+            cdiv= $('#resolveddiv>#task' + i);
+            if (cdiv.length != 0) {
+                $("#closeddiv").append(cdiv);
+                cdiv.find("#clsbtn").remove();
+            } else {
+                cdiv = $('#task' + i);
+            }
+            var sp = cdiv.find("#sp1");
+            sp.text("Закрытая задача");
+            sp.attr("class","label label-default");
+            sp.attr("class","label label-default");
+            cdiv.find("#addl").remove();
+            cdiv.find("#edl").remove();
+            cdiv.find("#addl").remove();
+            cdiv.find("#chldsha"+i).remove();
+            cdiv.find("#chldshlnk"+i).remove();
+            cdiv.find("#chkbx" + i).remove();
+
+
+        }
+        
+    </script>
 }
+
 
 
