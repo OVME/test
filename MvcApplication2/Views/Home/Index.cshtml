@@ -89,7 +89,7 @@
               
             </div>
         </div>
-        <ul>
+        <ul id=@("chul"+@item.Id)>
             <div class="list-group" id="@("childdiv"+item.Id)"></div>
         </ul>
 
@@ -158,9 +158,9 @@
                 <input id="clsbtn" value="Закрыть задачу" class="btn btn-danger pull-right" onclick="toclosed(@item.Id)">
             </div>
         </div>
-        <ul>
-            <div class="list-group" id="@("childdiv"+item.Id)"></div>
-        </ul>
+    <ul id=@("chul"+@item.Id)>
+        <div class="list-group" id="@("childdiv"+item.Id)"></div>
+    </ul>
     }
 </div>
 
@@ -234,6 +234,8 @@
             cdiv= $('#childdiv>#task' + i);
             if (cdiv.length != 0) {
                 $("#resolveddiv").append(cdiv);
+                var chdiv = $("#chul" + i);
+                $("#resolveddiv").append(chdiv);
                 cdiv.find("#lnks").append('<input id="clsbtn" value="Закрыть задачу" class="btn btn-danger pull-right" onclick="toclosed('+i+')">');
             } else {
                 cdiv = $('#task' + i);
@@ -259,6 +261,8 @@
             cdiv= $('#resolveddiv>#task' + i);
             if (cdiv.length != 0) {
                 $("#childdiv").append(cdiv);
+                var chdiv = $("#chul" + i);
+                $("#childdiv").append(chdiv);
                 cdiv.find("#clsbtn").remove();
             } else {
                 cdiv = $('#task' + i);
@@ -284,6 +288,8 @@
             cdiv= $('#resolveddiv>#task' + i);
             if (cdiv.length != 0) {
                 $("#closeddiv").append(cdiv);
+                var chdiv = $("#chul" + i);
+                chdiv.remove();
                 cdiv.find("#clsbtn").remove();
             } else {
                 cdiv = $('#task' + i);
