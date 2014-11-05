@@ -18,7 +18,6 @@ namespace MvcApplication2.Controllers
         }
         public ActionResult Index()
         {
-            ViewBag.Message = "Modify this template to jump-start your ASP.NET MVC application.";
             var list = new List<Task>(_sevice.GetRoot());
             return View(list);
         }
@@ -54,19 +53,27 @@ namespace MvcApplication2.Controllers
 
         public ActionResult EditTaskWindow(int id)
         {
-            Task task = _sevice.GetFirst(new { Id = id });
-            return PartialView(task);
+            if(ModelState.IsValid)
+            { 
+                Task task = _sevice.GetFirst(new { Id = id });
+                return PartialView(task);
+            }
+            return new HttpStatusCodeResult(500);
         }
 
         [HttpPost]
         public ActionResult AddNewTask(Task task)
         {
-            if (task.Task_Id == 0)
-                task.Task_Id = null;
-            _sevice.Insert(task);
-            List<Task> list = new List<Task>();
-            list.Add(task);
-            return PartialView("GetChildren", list);
+            if(ModelState.IsValid)
+             { 
+                if (task.Task_Id == 0)
+                    task.Task_Id = null;
+                _sevice.Insert(task);
+                List<Task> list = new List<Task>();
+                list.Add(task);
+                return PartialView("GetChildren", list);
+             }
+            return new HttpStatusCodeResult(500);
         }
 
         public ActionResult DeleteTask(int id)

@@ -77,7 +77,7 @@
                     @Ajax.ActionLink("Сделать активной", "SetActive", new { id = item.Id }, new AjaxOptions { UpdateTargetId = "task" + item.Id, InsertionMode = InsertionMode.Replace }, new { @class = "btn btn-default" })
                 }
 
-                @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#chldshlnk" + item.Id + "').hide(); $('#chldsha"+item.Id+"').show();" }, new { @id = "chldshlnk" + item.Id })
+                @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#chldshlnk" + item.Id + "').hide(); $('#chldsha" + item.Id + "').show();afterloadsetting();" }, new { @id = "chldshlnk" + item.Id })
                 
                 <a href="#" id=@("chldsha"+item.Id) style="display: none" onclick=@("$('#childdiv" + item.Id + "').toggle();")>Показать/скрыть подзадачи</a>
 
@@ -145,7 +145,7 @@
                     @Ajax.ActionLink("Сделать активной", "SetActive", new { id = item.Id }, new AjaxOptions { UpdateTargetId = "task" + item.Id, InsertionMode = InsertionMode.Replace }, new { @class = "btn btn-default" })
                 }
 
-                @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#chldshlnk" + item.Id + "').hide(); $('#chldsha" + item.Id + "').show();" }, new { @id = "chldshlnk" + item.Id, @style = "display: none" })
+                @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = item.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + item.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "afterloadsetting(); $('#chldshlnk" + item.Id + "').hide(); $('#chldsha" + item.Id + "').show();" }, new { @id = "chldshlnk" + item.Id, @style = "display: none" })
 
                 <a href="#" id=@("chldsha"+item.Id) style="display: none" onclick=@("$('#childdiv" + item.Id + "').toggle();")>Показать/скрыть подзадачи</a>
 
@@ -214,6 +214,7 @@
 
     <script>
         function afterloadsetting() {
+            $.ajaxSetup({ cache: false });
             $('body').on('click', '.taskItem', function(e) {
                 e.preventDefault();
                 $.get(this.href, function(data) {
@@ -235,6 +236,8 @@
             if (cdiv.length != 0) {
                 $("#resolveddiv").append(cdiv);
                 var chdiv = $("#chul" + i);
+                var childdiv = $("#childdiv" + i);
+                childdiv.hide();
                 $("#resolveddiv").append(chdiv);
                 cdiv.find("#lnks").append('<input id="clsbtn" value="Закрыть задачу" class="btn btn-danger pull-right" onclick="toclosed('+i+')">');
             } else {
@@ -262,6 +265,8 @@
             if (cdiv.length != 0) {
                 $("#childdiv").append(cdiv);
                 var chdiv = $("#chul" + i);
+                var childdiv = $("#childdiv" + i);
+                childdiv.show();
                 $("#childdiv").append(chdiv);
                 cdiv.find("#clsbtn").remove();
             } else {

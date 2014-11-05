@@ -6,7 +6,7 @@
     </div>
     <div class="modal-body">
         <div>
-            @using (Ajax.BeginForm("UpdateTask", new AjaxOptions { UpdateTargetId = "task" + Model.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#modDialog').modal('hide');" }))
+            @using (Ajax.BeginForm("UpdateTask", new AjaxOptions { UpdateTargetId = "task" + Model.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#modDialog').modal('hide'); afterloadsetting();" }))
             {
                 Html.EnableClientValidation(true);
                 Html.EnableUnobtrusiveJavaScript(true);

@@ -63,7 +63,7 @@
         @Ajax.ActionLink("Сделать активной", "SetActive", new { id = Model.Id }, new AjaxOptions { UpdateTargetId = "task" + Model.Id, InsertionMode = InsertionMode.Replace }, new { @class = "btn btn-default" })
     }
 
-    @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = Model.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + Model.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#chldshlnk" + Model.Id + "').hide(); $('#chldsha" + Model.Id + "').show();" }, new { @id = "chldshlnk" + Model.Id })
+    @Ajax.ActionLink("Показать/скрыть подзадачи", "GetChildren", new { pid = Model.Id }, new AjaxOptions { UpdateTargetId = "childdiv" + Model.Id, InsertionMode = InsertionMode.Replace, OnSuccess = "$('#chldshlnk" + Model.Id + "').hide(); $('#chldsha" + Model.Id + "').show();afterloadsetting();" }, new { @id = "chldshlnk" + Model.Id })
 
     <a href="#" id=@("chldsha" + Model.Id) style="display: none" onclick=@("$('#childdiv" + Model.Id + "').toggle();")>Показать/скрыть подзадачи</a>
 
