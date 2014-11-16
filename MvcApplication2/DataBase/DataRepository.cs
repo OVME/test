@@ -41,7 +41,9 @@ namespace MvcApplication2.DataBase
         public virtual IEnumerable<TEntity> GetAll()
         {
             var sql = SqlGenerator.GetSelectAll();
-            return Connection.Query<TEntity>(sql);
+            var res = Connection.Query<TEntity>(sql);
+            Dispose();
+            return res;
         }
 
         /// <summary>
@@ -52,7 +54,9 @@ namespace MvcApplication2.DataBase
         public virtual IEnumerable<TEntity> GetWhere(object filters)
         {
             var sql = SqlGenerator.GetSelect(filters);
-            return Connection.Query<TEntity>(sql, filters);
+            var res = Connection.Query<TEntity>(sql, filters);
+            Dispose();
+            return res;
         }
 
         /// <summary>
@@ -62,7 +66,9 @@ namespace MvcApplication2.DataBase
         /// <returns></returns>
         public virtual TEntity GetFirst(object filters)
         {
-            return this.GetWhere(filters).FirstOrDefault();
+            var res = this.GetWhere(filters).FirstOrDefault();
+            Dispose();
+            return res;
         }
 
         /// <summary>
@@ -90,7 +96,7 @@ namespace MvcApplication2.DataBase
             {
                 added = Connection.Execute(sql, instance) > 0;
             }
-
+            Dispose();
             return added;
         }
 
@@ -102,9 +108,10 @@ namespace MvcApplication2.DataBase
         public virtual bool Delete(object key)
         {
             var sql = SqlGenerator.GetDelete();
-            return Connection.Execute(sql, key) > 0;
+            var res =  Connection.Execute(sql, key) > 0;
+            Dispose();
+            return res;
         }
-
         /// <summary>
         /// 
         /// </summary>
@@ -113,7 +120,9 @@ namespace MvcApplication2.DataBase
         public virtual bool Update(TEntity instance)
         {
             var sql = SqlGenerator.GetUpdate();
-            return Connection.Execute(sql, instance) > 0;
+            var res = Connection.Execute(sql, instance) > 0;
+            Dispose();
+            return res;
         }
 
         #endregion

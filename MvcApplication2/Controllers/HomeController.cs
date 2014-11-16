@@ -110,7 +110,7 @@ namespace MvcApplication2.Controllers
             _sevice.Update(task);
             return PartialView("TaskPart",task);
         }
-
+        [HttpPost]
         public ActionResult SetResolved(int id)
         {
             Task task = _sevice.GetFirst(new { Id = id });
@@ -118,7 +118,7 @@ namespace MvcApplication2.Controllers
             _sevice.Update(task);
             return new HttpStatusCodeResult(200);
         }
-
+        [HttpPost]
         public ActionResult FromResolvedToActive(int id)
         {
             Task task = _sevice.GetFirst(new { Id = id });
@@ -126,7 +126,7 @@ namespace MvcApplication2.Controllers
             _sevice.Update(task);
             return new HttpStatusCodeResult(200);
         }
-
+        [HttpPost]
         public ActionResult FromResolvedToClosed(int id)
         {
             Task task = _sevice.GetFirst(new { Id = id });

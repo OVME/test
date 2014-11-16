@@ -1,4 +1,5 @@
-﻿@model MvcApplication2.Models.Task
+﻿@using MvcApplication2.Models
+@model MvcApplication2.Models.Task
 <div class="modal-content">
     <div class="modal-header">
         <button class="close" data-dismiss="modal" area-hidden="true">X</button>
@@ -17,7 +18,7 @@
                 </div>
                 <div class="editor-field">
                     <label for="Deadline">Срок выполнения до:</label>
-                    <input type="text" value="@Model.Deadline" data-val="true" data-val-required="Укажите дату." class="form-control" id="dpd2" data-date="12-02-2012" data-date-format="mm.dd.yyyy" name="Deadline" />
+                    <input type="text" value="@(Model.Deadline.Date.ToString("MM.dd.yyyy"))" data-val="true" data-val-required="Укажите дату." class="form-control" id="dpd2" data-date="12-02-2012" data-date-format="mm.dd.yyyy" name="Deadline" />
                     <span class="field-validation-valid" data-valmsg-for="Deadline" data-valmsg-replace="true"></span>
                 </div>
                 <div>
@@ -29,9 +30,28 @@
                 <div>
                     <label for="Priority">Приоритет:</label>
                     <select class="form-control" name="Priority">
-                        <option value="High">Высокий</option>
-                        <option value="Middle">Средний</option>
-                        <option value="Low">Низкий</option>
+                        @if (Model.Priority == PriorityEnum.High) 
+                        { 
+                            <option selected="true" value="High">Высокий</option>
+                            <option value="Middle">Средний</option>
+                            <option value="Low">Низкий</option>
+                        }
+                        else
+                        {
+                            if (Model.Priority == PriorityEnum.Middle)
+                            {
+                                <option  value="High">Высокий</option>
+                                <option selected="true" value="Middle">Средний</option>
+                                <option value="Low">Низкий</option>
+                            }
+                            else
+                            {
+                                <option value="High">Высокий</option>
+                                <option  value="Middle">Средний</option>
+                                <option selected ="true" value="Low">Низкий</option>
+                            }
+                        }
+                        
                     </select>
                 </div>
 
@@ -51,10 +71,9 @@
 </div>
 <script>
 
-    $('#dpd2').datepicker({
-        startDate: "today"
-    });
+   
 
 </script>
 
 @Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/edittask");

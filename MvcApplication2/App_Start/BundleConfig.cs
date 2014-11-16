@@ -48,6 +48,15 @@ namespace MvcApplication2
                         "~/Content/themes/base/jquery.ui.datepicker.css",
                         "~/Content/themes/base/jquery.ui.progressbar.css",
                         "~/Content/themes/base/jquery.ui.theme.css"));
+
+            bundles.Add((new ScriptBundle("~/bundles/index").Include(
+                "~/Scripts/indexscript.js")));
+
+            bundles.Add((new ScriptBundle("~/bundles/newtask").Include(
+                "~/Scripts/newtaskscript.js")));
+
+            bundles.Add((new ScriptBundle("~/bundles/edittask").Include(
+                "~/Scripts/edittaskscript.js")));
         }
     }
 }
