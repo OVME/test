@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using Autofac;
 using MvcApplication2.DataBase;
 using MvcApplication2.Models;
 
@@ -9,17 +10,23 @@ namespace MvcApplication2.Controllers
 {
     public class HomeController : Controller
     {
-        private TaskSevice _sevice;
-
-
+        private IContainer _container; 
         public HomeController()
         {
-            _sevice = new TaskSevice();
+            var builder = new ContainerBuilder();
+            builder.RegisterType<Repository>().As<IDataRepository<Task>>();
+            builder.RegisterType<TaskSevice>().As<IService<Task>>();
+            _container = builder.Build();
+
         }
         public ActionResult Index()
         {
-            var list = new List<Task>(_sevice.GetRoot());
-            return View(list);
+            using (var scope = _container.BeginLifetimeScope())
+            {
+                var _service = scope.Resolve<IService<Task>>();
+                var list = new List<Task>(_service.GetRoot());
+                return View(list);
+            }
         }
 
         public ActionResult About()
@@ -38,8 +45,12 @@ namespace MvcApplication2.Controllers
 
         public ActionResult GetChildren(int pid)
         {
-            var list = _sevice.GetChildren(pid);
-            return PartialView(list);
+            using (var scope = _container.BeginLifetimeScope())
+            {
+                var _service = scope.Resolve<IService<Task>>();
+                var list = _service.GetChildren(pid);
+                return PartialView(list);
+            }
         }
 
         public ActionResult NewTaskWindow(int? pid)
@@ -53,10 +64,15 @@ namespace MvcApplication2.Controllers
 
         public ActionResult EditTaskWindow(int id)
         {
-            if(ModelState.IsValid)
-            { 
-                Task task = _sevice.GetFirst(new { Id = id });
-                return PartialView(task);
+
+            if (ModelState.IsValid)
+            {
+                using (var scope = _container.BeginLifetimeScope())
+                {
+                    var _service = scope.Resolve<IService<Task>>();
+                    Task task = _service.GetFirst(new { Id = id });
+                    return PartialView(task);
+                }
             }
             return new HttpStatusCodeResult(500);
         }
@@ -64,33 +80,37 @@ namespace MvcApplication2.Controllers
         [HttpPost]
         public ActionResult AddNewTask(Task task)
         {
-            if(ModelState.IsValid)
-             { 
+            if (ModelState.IsValid)
+            {
                 if (task.Task_Id == 0)
                     task.Task_Id = null;
-                _sevice.Insert(task);
-                List<Task> list = new List<Task>();
-                list.Add(task);
-                return PartialView("GetChildren", list);
-             }
+                using (var scope = _container.BeginLifetimeScope())
+                {
+                    var _service = scope.Resolve<IService<Task>>();
+                    _service.Insert(task);
+                    var list = new List<Task>();
+                    list.Add(task);
+                    return PartialView("GetChildren", list);
+                }
+            }
             return new HttpStatusCodeResult(500);
         }
 
         public ActionResult DeleteTask(int id)
         {
-
-            if (_sevice.GetWhere(new { Id = id }).First().Task_Id == null)
+            using (var scope = _container.BeginLifetimeScope())
             {
-                _sevice.DeleteChildren(id);
-                _sevice.Delete(new { Id = id });
-                //return PartialView("GetChildren", _sevice.GetRoot());
-                return new HttpStatusCodeResult(200);
-            }
-            else
-            {
-                int pid = (int)(_sevice.GetWhere(new { Id = id }).First().Task_Id);
-                _sevice.DeleteChildren(id);
-                _sevice.Delete(new { Id = id });
+                var _service = scope.Resolve<IService<Task>>();
+                if (_service.GetWhere(new { Id = id }).First().Task_Id == null)
+                {
+                    _service.DeleteChildren(id);
+                    _service.Delete(new { Id = id });
+                    //return PartialView("GetChildren", _sevice.GetRoot());
+                    return new HttpStatusCodeResult(200);
+                }
+                int pid = (int)(_service.GetWhere(new { Id = id }).First().Task_Id);
+                _service.DeleteChildren(id);
+                _service.Delete(new { Id = id });
                 //return PartialView("GetChildren", _sevice.GetWhere(new { Task_Id = pid }));
                 return new HttpStatusCodeResult(200);
             }
@@ -98,40 +118,60 @@ namespace MvcApplication2.Controllers
 
         public ActionResult UpdateTask(Task task)
         {
-            _sevice.Update(task);
-            //List<Task> list = task.Task_Id == null ? new List<Task>(_sevice.GetRoot()) : new List<Task>(_sevice.GetWhere(new { Task_Id = task.Task_Id }));
-            return PartialView("TaskPart", task);
+            using (var scope = _container.BeginLifetimeScope())
+            {
+                var _service = scope.Resolve<IService<Task>>();
+                _service.Update(task);
+                return PartialView("TaskPart", task);
+            }
         }
 
         public ActionResult SetActive(int id)
         {
-            Task task = _sevice.GetFirst(new {Id = id});
-            task.State = StateEnum.Active;
-            _sevice.Update(task);
-            return PartialView("TaskPart",task);
+            using (var scope = _container.BeginLifetimeScope())
+            {
+                var _service = scope.Resolve<IService<Task>>();
+                Task task = _service.GetFirst(new { Id = id });
+                task.State = StateEnum.Active;
+                _service.Update(task);
+                return PartialView("TaskPart", task);
+            }
         }
         [HttpPost]
         public ActionResult SetResolved(int id)
         {
-            Task task = _sevice.GetFirst(new { Id = id });
-            task.State = StateEnum.Resolved;
-            _sevice.Update(task);
+            using (var scope = _container.BeginLifetimeScope())
+            {
+                var _service = scope.Resolve<IService<Task>>();
+                Task task = _service.GetFirst(new { Id = id });
+                task.State = StateEnum.Resolved;
+                _service.Update(task);
+            }
             return new HttpStatusCodeResult(200);
+
         }
         [HttpPost]
         public ActionResult FromResolvedToActive(int id)
         {
-            Task task = _sevice.GetFirst(new { Id = id });
-            task.State = StateEnum.Active;
-            _sevice.Update(task);
-            return new HttpStatusCodeResult(200);
+            using (var scope = _container.BeginLifetimeScope())
+            {
+                var _service = scope.Resolve<IService<Task>>();
+                Task task = _service.GetFirst(new { Id = id });
+                task.State = StateEnum.Active;
+                _service.Update(task);
+                return new HttpStatusCodeResult(200);
+            }
         }
         [HttpPost]
         public ActionResult FromResolvedToClosed(int id)
         {
-            Task task = _sevice.GetFirst(new { Id = id });
-            task.State = StateEnum.Closed;
-            _sevice.Update(task);
+            using (var scope = _container.BeginLifetimeScope())
+            {
+                var _service = scope.Resolve<IService<Task>>();
+                Task task = _service.GetFirst(new { Id = id });
+                task.State = StateEnum.Closed;
+                _service.Update(task);
+            }
             return new HttpStatusCodeResult(200);
         }
 

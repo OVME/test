@@ -11,7 +11,7 @@ namespace MvcApplication2.DataBase
 {
     public class TaskSevice : IService<Task>
     {
-        private readonly DataRepository<Task> _repo;
+        private readonly IDataRepository<Task> _repo;
 
         public TaskSevice()
         {
